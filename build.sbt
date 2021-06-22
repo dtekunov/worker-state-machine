@@ -16,6 +16,7 @@ lazy val root = (project in file(".")).
       "ch.qos.logback"            % "logback-classic"           % "1.2.3",
       "com.typesafe.slick"        %% "slick"                    % "3.3.3",
       "org.json4s"                %% "json4s-jackson"           % "3.7.0-RC1",
+      "org.mongodb.scala"         %% "mongo-scala-driver"       % "2.9.0",
 
       "com.typesafe.akka"         %% "akka-http-testkit"        % akkaHttpVersion % Test,
       "com.typesafe.akka"         %% "akka-actor-testkit-typed" % akkaVersion     % Test,

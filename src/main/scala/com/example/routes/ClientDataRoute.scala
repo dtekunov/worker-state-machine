@@ -3,7 +3,6 @@ package com.example.routes
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.example.UserRegistry.Command
 import com.example.directives.Requester
 import com.example.utils.Responses.pongResponse
 
@@ -11,7 +10,7 @@ import scala.concurrent.ExecutionContext
 
 object ClientDataRoute {
 
-  def apply(auth: String, registry: ActorRef[Command])
+  def apply(auth: String)
            (implicit system: ActorSystem[_], ec: ExecutionContext): Route =
     get {
       pathPrefix("get-single-record-structured") {
