@@ -3,14 +3,14 @@ package com.example.routes
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives.{get, headerValueByName, pathPrefix}
 import akka.http.scaladsl.server.Route
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import akka.http.scaladsl.server.Directives._
 import com.example.db.MongoEntriesConnector
-import com.example.directives.{Admin, AuthFailed, InternalServerError, SuccessLogin, checkAuth, checkRequester}
+import com.example.directives.{Admin, AuthFailed, HostnameNotFound, InternalServerError, SuccessLogin, checkAuth, checkRequester}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ServiceRoute {
+object HealthcheckRoute {
 
   /**
    * Service route for service healthcheck; db healthcheck; max limit of a server
@@ -44,8 +44,9 @@ object ServiceRoute {
                 val dbName = system.settings.config.getString("main.db.name")
                 val db = new MongoEntriesConnector(dbName)
                 checkAuth("admin", auth, db)(ec) {
-                case `SuccessLogin` => deepPingResponse
-                case `AuthFailed` =>   authenticationFailedResponse
+                case `SuccessLogin`     => deepPingResponse
+                case `AuthFailed`       => authenticationFailedResponse
+                case `HostnameNotFound` => hostnameNotFoundResponse
                 case _ =>              internalServerErrorResponse
               }
               case _ => notAcceptableResponse("Cannot access the following route with given Client-Entity")

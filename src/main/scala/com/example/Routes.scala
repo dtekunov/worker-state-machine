@@ -11,8 +11,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.example.db.MongoEntriesConnector
 import com.example.directives._
-import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, ServiceRoute}
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, HealthcheckRoute}
+import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import com.typesafe.config.Config
 
 /**
@@ -30,16 +30,25 @@ class Routes()(implicit val system: ActorSystem[_]) {
         headerValueByName("Authorization") &
         headerValueByName("Host")) {
         (rawRequester, auth, hostname) =>
+          val dbName = config.getString("main.db.name")
+          val db = new MongoEntriesConnector(dbName)
           checkRequester(rawRequester) {
-            case `Admin` => {
-              val dbName = config.getString("main.db.name")
-              val db = new MongoEntriesConnector(dbName)
+            case `Client` =>
+              checkAuth(hostname, auth, db)(ec) {
+                case `SuccessLogin` => ClientApiRoute(db, auth, hostname)(system, ec)
+                case `AuthFailed` => authenticationFailedResponse
+                case `HostnameNotFound` => ClientApiRoute(db, auth, hostname)(system, ec)
+                case _ => internalServerErrorResponse
+              }
+
+            case `Admin` =>
               checkAuth(hostname, auth, db)(ec) {
                 case `SuccessLogin` => AdminApiRoute(db, auth)(system, ec)
                 case `AuthFailed` => authenticationFailedResponse
+                case `HostnameNotFound` => hostnameNotFoundResponse
                 case _ => internalServerErrorResponse
               }
-            }
+
             case `Unknown` => invalidClientEntityResponse
             case _ => notAcceptableResponse("Cannot access the following route with given Client-Entity")
           }
@@ -55,6 +64,6 @@ class Routes()(implicit val system: ActorSystem[_]) {
           }
       }
     } ~ pathPrefix("healthcheck") {
-      ServiceRoute(system, ec)
+      HealthcheckRoute(system, ec)
     }
 }
