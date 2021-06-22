@@ -12,9 +12,10 @@ import com.example.utils.mongoDocToEntry
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-object AdminApiRoute {
+object AdminApiRoute extends GlobalRoute {
 
-  def apply(db: MongoEntriesConnector, auth: String)(system: ActorSystem[_], ec: ExecutionContext): Route =
+  def apply(db: MongoEntriesConnector, auth: String, hostname: String)
+           (system: ActorSystem[_], ec: ExecutionContext): Route =
     get {
       pathPrefix("get-admins-list") {
         onComplete(db.getAllEntries) {

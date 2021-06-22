@@ -1,10 +1,12 @@
 package com.example
 
 import akka.http.scaladsl.server.Directives.onComplete
-import akka.http.scaladsl.server.{Directive0, Directive1}
+import akka.http.scaladsl.server.{Directive0, Directive1, Route, StandardRoute}
 import akka.http.scaladsl.server.directives.BasicDirectives.provide
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import com.example.db.MongoEntriesConnector
+import com.example.routes.{ClientApiRoute, GlobalRoute}
+import com.example.utils.Responses.{authenticationFailedResponse, hostnameNotFoundResponse, internalServerErrorResponse}
 import com.example.utils.{tryOptionToOption, tryOptionWithAlternative}
 import org.mongodb.scala.bson.collection.immutable.Document
 
@@ -60,7 +62,4 @@ package object directives {
     case requester if requester == "editor" => provide(Editor)
     case _ => provide(Unknown)
   }
-
-
-
 }

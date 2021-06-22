@@ -3,10 +3,14 @@ package com.example.routes
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
+import com.example.db.MongoEntriesConnector
 import com.example.directives.Requester
 
-object EditorDataRoute {
+import scala.concurrent.ExecutionContext
 
-  def apply(auth: String)(implicit system: ActorSystem[_]): Route = { complete("TODO") }
+object EditorDataRoute extends GlobalRoute {
+
+  def apply(db: MongoEntriesConnector, auth: String, hostname: String)
+           (system: ActorSystem[_], ec: ExecutionContext): Route = { complete("TODO") }
 
 }

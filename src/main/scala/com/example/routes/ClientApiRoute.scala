@@ -13,7 +13,7 @@ import com.example.utils.mongoDocToEntry
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-object ClientApiRoute {
+object ClientApiRoute extends GlobalRoute {
 
   def apply(db: MongoEntriesConnector, auth: String, hostname: String)
            (system: ActorSystem[_], ec: ExecutionContext): Route =

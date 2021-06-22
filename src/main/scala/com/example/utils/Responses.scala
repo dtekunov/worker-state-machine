@@ -3,21 +3,11 @@ package com.example.utils
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.StandardRoute
+import akka.http.scaladsl.server.{Route, StandardRoute}
 import com.example.jsonFormatters.JsonWriter
+import com.example.routes.{ClientApiRoute, GlobalRoute}
 
-object Responses {
-
-  private final val baseHeaders = Vector.empty[HttpHeader]
-
-  private def standardOkResponse[T](output: T): HttpResponse =
-    HttpResponse(
-      status = StatusCodes.OK,
-      headers = baseHeaders,
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = JsonWriter.format(output)
-      ))
+object Responses extends BaseHttp {
 
   def okResponse: StandardRoute = complete(standardOkResponse("ok"))
   def deepPingResponse: StandardRoute = complete(standardOkResponse("auth successful"))

@@ -1,5 +1,6 @@
 package com.example.db
 
+import com.typesafe.config.Config
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters.equal
 
@@ -43,4 +44,11 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
   def getEntryByAuth(toFind: String): Future[Option[Document]] =
     entriesCollection.find(equal("auth_entry", toFind)).first().toFutureOption()
 
+}
+
+object MongoEntriesConnector {
+  def initiateDb(config: Config)(implicit ec: ExecutionContext): MongoEntriesConnector = {
+    val dbName = config.getString("main.db.name")
+    new MongoEntriesConnector(dbName)
+  }
 }

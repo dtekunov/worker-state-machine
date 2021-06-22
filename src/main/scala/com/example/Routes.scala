@@ -10,6 +10,7 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.example.db.MongoEntriesConnector
+import com.example.db.MongoEntriesConnector.initiateDb
 import com.example.directives._
 import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, HealthcheckRoute}
 import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, okResponse}
@@ -25,45 +26,63 @@ class Routes()(implicit val system: ActorSystem[_]) {
   private implicit val timeout: Timeout = Timeout.create(system.settings.config.getDuration("main.routes.ask-timeout"))
 
   val routes: Route =
-    pathPrefix("service") {
-      (headerValueByName("Client-Entity") &
-        headerValueByName("Authorization") &
-        headerValueByName("Host")) {
-        (rawRequester, auth, hostname) =>
-          val dbName = config.getString("main.db.name")
-          val db = new MongoEntriesConnector(dbName)
+    (headerValueByName("Client-Entity") &
+      headerValueByName("Authorization") &
+      headerValueByName("Host")) {
+      (rawRequester, auth, hostname) =>
+        pathPrefix("service") {
+          val db = initiateDb(config)(ec)
           checkRequester(rawRequester) {
             case `Client` =>
               checkAuth(hostname, auth, db)(ec) {
                 case `SuccessLogin` => ClientApiRoute(db, auth, hostname)(system, ec)
                 case `AuthFailed` => authenticationFailedResponse
-                case `HostnameNotFound` => ClientApiRoute(db, auth, hostname)(system, ec)
+                case `HostnameNotFound` => hostnameNotFoundResponse
                 case _ => internalServerErrorResponse
               }
 
             case `Admin` =>
               checkAuth(hostname, auth, db)(ec) {
-                case `SuccessLogin` => AdminApiRoute(db, auth)(system, ec)
+                case `SuccessLogin` => AdminApiRoute(db, auth, hostname)(system, ec)
+                case `AuthFailed` => authenticationFailedResponse
+                case `HostnameNotFound` => hostnameNotFoundResponse
+                case _ => internalServerErrorResponse
+              }
+            case _ => invalidClientEntityResponse
+          }
+
+        } ~ pathPrefix("data") {
+          val db = initiateDb(config)(ec)
+          checkRequester(rawRequester) {
+            case `Client` =>
+              checkAuth(hostname, auth, db)(ec) {
+                case `SuccessLogin` => ClientDataRoute(db, auth, hostname)(system, ec)
                 case `AuthFailed` => authenticationFailedResponse
                 case `HostnameNotFound` => hostnameNotFoundResponse
                 case _ => internalServerErrorResponse
               }
 
-            case `Unknown` => invalidClientEntityResponse
-            case _ => notAcceptableResponse("Cannot access the following route with given Client-Entity")
-          }
-      }
-    } ~ pathPrefix("data") {
-      (headerValueByName("Client-Entity") & headerValueByName("Authorization")) {
-        (rawRequester, auth) =>
-          checkRequester(rawRequester) {
-            case `Client` => ClientDataRoute(auth)(system, ec)
-            case `Editor` => EditorDataRoute(auth)(system)
+            case `Editor` => EditorDataRoute(db, auth, hostname)(system, ec)
             case `Admin` => notAcceptableResponse("Cannot access the following route with given Client-Entity")
-            case `Unknown` => invalidClientEntityResponse
+            case _ => invalidClientEntityResponse
           }
-      }
-    } ~ pathPrefix("healthcheck") {
-      HealthcheckRoute(system, ec)
+          /**
+           * Doc for this route is provided in Healthcheck route.scala
+           */
+        } ~ pathPrefix("healthcheck") {
+          pathPrefix(Remaining) {
+            case remain if remain == "max-limit" =>
+              maxLimitResponse(system.settings.config.getInt("main.max-limit"))
+            case remain if remain == "ping" =>
+              okResponse
+            case remain if remain == "deep_ping" =>
+              checkRequester(rawRequester) {
+                case `Admin` =>
+                  val db = initiateDb(config)(ec)
+                  HealthcheckRoute(db, auth, hostname)(system, ec)
+                case _ => invalidClientEntityResponse
+              }
+          }
+        }
     }
 }

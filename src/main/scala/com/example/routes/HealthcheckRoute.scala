@@ -10,7 +10,7 @@ import com.example.directives.{Admin, AuthFailed, HostnameNotFound, InternalServ
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object HealthcheckRoute {
+object HealthcheckRoute extends GlobalRoute {
 
   /**
    * Service route for service healthcheck; db healthcheck; max limit of a server
@@ -29,31 +29,13 @@ object HealthcheckRoute {
    * <authenticationFailedResponse>
    * <internalServerErrorResponse>
    */
-  def apply(implicit system: ActorSystem[_], ec: ExecutionContext): Route = get {
-    pathPrefix(Remaining) {
-      case remain if remain == "max-limit" =>
-        maxLimitResponse(system.settings.config.getInt("main.max-limit"))
-      case remain if remain == "ping" =>
-        okResponse
-      case remain if remain == "deep_ping" =>
-        (headerValueByName("Client-Entity") &
-          headerValueByName("Authorization")) {
-          (rawRequester, auth) =>
-            checkRequester(rawRequester) {
-              case `Admin` =>
-                val dbName = system.settings.config.getString("main.db.name")
-                val db = new MongoEntriesConnector(dbName)
-                checkAuth("admin", auth, db)(ec) {
-                case `SuccessLogin`     => deepPingResponse
-                case `AuthFailed`       => authenticationFailedResponse
-                case `HostnameNotFound` => hostnameNotFoundResponse
-                case _ =>              internalServerErrorResponse
-              }
-              case _ => notAcceptableResponse("Cannot access the following route with given Client-Entity")
-            }
-        }
-      case _ =>
-        notAcceptableResponse("Service route only supports `max-limit`, `pong` and `deep-ping`")
+  def apply(db: MongoEntriesConnector, auth: String, hostname: String)
+           (system: ActorSystem[_], ec: ExecutionContext): Route = get {
+    checkAuth("admin", auth, db)(ec) {
+      case `SuccessLogin` => deepPingResponse
+      case `AuthFailed` => authenticationFailedResponse
+      case `HostnameNotFound` => hostnameNotFoundResponse
+      case _ => internalServerErrorResponse
     }
   }
 }
