@@ -4,5 +4,6 @@ import slick.jdbc.SQLiteProfile.api._
 import slick.lifted.{ProvenShape, Tag}
 
 case class Entries(authEntry: String,
-                   hostname: String)
+                   hostname: String,
+                   isAdmin: Boolean)
 

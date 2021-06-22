@@ -18,7 +18,8 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
   def insertSingleEntry(entry: Entries): Future[Option[Completed]] = {
     val docToInsert = Document(
       "authEntry" -> entry.authEntry,
-      "hostname" -> entry.hostname)
+      "hostname" -> entry.hostname,
+      "is_admin" -> entry.isAdmin)
 
     entriesCollection.insertOne(docToInsert).toFutureOption()
   }
@@ -41,7 +42,5 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
 
   def getEntryByAuth(toFind: String): Future[Option[Document]] =
     entriesCollection.find(equal("auth_entry", toFind)).first().toFutureOption()
-
-
 
 }

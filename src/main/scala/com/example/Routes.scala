@@ -12,7 +12,7 @@ import akka.util.Timeout
 import com.example.db.MongoEntriesConnector
 import com.example.directives._
 import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, ServiceRoute}
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, pongResponse}
+import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import com.typesafe.config.Config
 
 /**

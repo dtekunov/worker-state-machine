@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import com.example.db.{Entries, MongoEntriesConnector}
 import com.example.directives.{Requester, checkAuth, checkRequester}
 import com.example.jsonFormatters.JsonWriter.{format, formatEntrySeq}
-import com.example.utils.Responses.{authMechanismIsNotWorkingResponse, authenticationFailedResponse, deepPingResponse, entriesResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, pongResponse}
+import com.example.utils.Responses.{authMechanismIsNotWorkingResponse, authenticationFailedResponse, deepPingResponse, entriesResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import com.example.utils.mongoDocToEntry
 
 import scala.concurrent.ExecutionContext
@@ -25,7 +25,7 @@ object AdminApiRoute {
             case elems =>
               system.log.info("get-all admins list operation acquired")
               val entries = elems.map { doc =>
-                Entries(doc("auth_entry").asString().getValue, doc("hostname").asString().getValue)
+                Entries(doc("auth_entry").asString().getValue, doc("hostname").asString().getValue, isAdmin = true)
               }
               entriesResponse(formatEntrySeq(entries))
           }
@@ -47,11 +47,19 @@ object AdminApiRoute {
       }
   } ~ post {
     pathPrefix("add-admin") {
-      pongResponse // TODO
+      parameter("auth", "hostname") {
+        (auth, hostname) =>
+        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true))) {
+          case Success(Some(_)) => okResponse
+          case _ =>
+            system.log.error(s"Cannot insert entries to db")
+            internalServerErrorResponse
+        }
+      }
     }
   } ~ delete {
     pathPrefix("delete-admin") {
-      pongResponse // TODO
+      okResponse // TODO
     }
   }
 

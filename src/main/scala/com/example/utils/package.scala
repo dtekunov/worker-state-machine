@@ -29,6 +29,10 @@ package object utils {
   }
 
   def mongoDocToEntry(doc: Document): Entries =
-    Entries(doc("auth_entry").asString().getValue, doc("hostname").asString().getValue)
+    Entries(
+      doc("auth_entry").asString().getValue,
+      doc("hostname").asString().getValue,
+      doc("is_admin").asBoolean().getValue
+    )
 
 }

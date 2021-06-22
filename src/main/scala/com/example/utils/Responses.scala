@@ -19,7 +19,7 @@ object Responses {
         string = JsonWriter.format(output)
       ))
 
-  def pongResponse: StandardRoute = complete(standardOkResponse("pong"))
+  def okResponse: StandardRoute = complete(standardOkResponse("ok"))
   def deepPingResponse: StandardRoute = complete(standardOkResponse("auth successful"))
   def maxLimitResponse(limit: Int): StandardRoute = complete(standardOkResponse(limit))
   def entriesResponse(entries: String): StandardRoute = complete(standardOkResponse(entries))
