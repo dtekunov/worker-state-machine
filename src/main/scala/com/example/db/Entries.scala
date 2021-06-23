@@ -5,5 +5,6 @@ import slick.lifted.{ProvenShape, Tag}
 
 case class Entries(authEntry: String,
                    hostname: String,
-                   isAdmin: Boolean)
+                   isAdmin: Boolean,
+                   actualQuota: Int)
 

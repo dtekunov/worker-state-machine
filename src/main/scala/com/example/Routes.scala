@@ -17,7 +17,22 @@ import com.example.utils.Responses.{authenticationFailedResponse, deepPingRespon
 import com.typesafe.config.Config
 
 /**
- * Main `routing`
+ * -- Main `routing`
+ *
+ * GET ~/healthcheck/~ -> HealthcheckRoute
+ *
+ * GET ~/service/~     -> ClientApiRoute | AdminApiRoute
+ *
+ * GET ~/data/~        -> ClientDataRoute | EditorDataRoute
+ *
+ * -- Checks `Authorization` and `Requester` headers, authorizes user
+ *
+ * @responses
+ * <notAcceptableResponse>
+ * <authenticationFailedResponse>
+ * <internalServerErrorResponse>
+ * <hostnameNotFoundResponse>
+ * <invalidClientEntityResponse>
  */
 class Routes()(implicit val system: ActorSystem[_]) {
 
@@ -38,7 +53,9 @@ class Routes()(implicit val system: ActorSystem[_]) {
                 case `SuccessLogin` => ClientApiRoute(db, auth, hostname)(system, ec)
                 case `AuthFailed` => authenticationFailedResponse
                 case `HostnameNotFound` => hostnameNotFoundResponse
-                case _ => internalServerErrorResponse
+                case _ =>
+                  system.log.error("Check auth failed, completing with 500")
+                  internalServerErrorResponse
               }
 
             case `Admin` =>
@@ -48,7 +65,9 @@ class Routes()(implicit val system: ActorSystem[_]) {
                 case `HostnameNotFound` => hostnameNotFoundResponse
                 case _ => internalServerErrorResponse
               }
-            case _ => invalidClientEntityResponse
+            case _ =>
+              system.log.error("Check auth failed, completing with 500")
+              invalidClientEntityResponse
           }
 
         } ~ pathPrefix("data") {
@@ -59,7 +78,9 @@ class Routes()(implicit val system: ActorSystem[_]) {
                 case `SuccessLogin` => ClientDataRoute(db, auth, hostname)(system, ec)
                 case `AuthFailed` => authenticationFailedResponse
                 case `HostnameNotFound` => hostnameNotFoundResponse
-                case _ => internalServerErrorResponse
+                case _ =>
+                  system.log.error("Check auth failed, completing with 500")
+                  internalServerErrorResponse
               }
 
             case `Editor` => EditorDataRoute(db, auth, hostname)(system, ec)
@@ -75,7 +96,7 @@ class Routes()(implicit val system: ActorSystem[_]) {
               maxLimitResponse(system.settings.config.getInt("main.max-limit"))
             case remain if remain == "ping" =>
               okResponse
-            case remain if remain == "deep_ping" =>
+            case remain if remain == "db_ping" =>
               checkRequester(rawRequester) {
                 case `Admin` =>
                   val db = initiateDb(config)(ec)

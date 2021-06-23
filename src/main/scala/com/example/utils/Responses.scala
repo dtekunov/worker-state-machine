@@ -25,7 +25,7 @@ object Responses extends BaseHttp {
 
   def invalidClientEntityResponse: StandardRoute =
     complete(HttpResponse(
-      status = StatusCodes.Unauthorized,
+      status = StatusCodes.BadRequest,
       headers = baseHeaders,
       entity = HttpEntity(
         contentType = ContentTypes.`application/json`,

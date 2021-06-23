@@ -1,7 +1,7 @@
 package com.example.jsonFormatters
 
-import com.example.db.Entries
-import org.json4s.{Extraction, FullTypeHints, JArray, JBool, JInt, JObject, JString, JValue}
+import com.example.db.{Entries, UserLogs}
+import org.json4s.{Extraction, FullTypeHints, JArray, JBool, JInt, JLong, JObject, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, pretty, render}
 import org.json4s.jackson.Serialization
 
@@ -11,16 +11,25 @@ object JsonWriter {
     case result: Int => pretty(render(JObject(
       "max-limit" -> JInt(result)
     )))
-    case result: String if result == "pong" =>
+    case result: String =>
       compact(render(JObject(
         "message" -> JString(result)
       )))
 
     case res: Entries =>
-      compact(render(JObject(
+      pretty(render(JObject(
         "auth_entry" -> JString(res.authEntry),
         "hostname" -> JString(res.hostname),
-        "is_admin" -> JBool(res.isAdmin)
+        "is_admin" -> JBool(res.isAdmin),
+        "actual_quota" -> JInt(res.actualQuota)
+      )))
+
+    case res: UserLogs =>
+      pretty(render(JObject(
+        "id" -> JLong(res.id),
+        "hostname" -> JString(res.hostname),
+        "added_time" -> JString(res.addedTime.toString),
+        "quota_reserved" -> JInt(res.quota_reserved),
       )))
   }
 

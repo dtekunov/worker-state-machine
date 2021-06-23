@@ -2,9 +2,12 @@ package com.example.db
 
 import com.typesafe.config.Config
 import org.mongodb.scala._
-import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Filters.{and, equal}
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.result.UpdateResult
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
 
@@ -20,7 +23,8 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
     val docToInsert = Document(
       "authEntry" -> entry.authEntry,
       "hostname" -> entry.hostname,
-      "is_admin" -> entry.isAdmin)
+      "is_admin" -> entry.isAdmin,
+      "actual_quota" -> entry.actualQuota)
 
     entriesCollection.insertOne(docToInsert).toFutureOption()
   }
@@ -35,6 +39,20 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
     userLogsCollection.insertOne(docToInsert).toFutureOption()
   }
 
+  def updateQuota(auth: String, hostname: String, quotaToRecord: Int): Future[Option[UpdateResult]] = {
+    Await.result(getEntryByAuthAndHostname(auth, hostname), 5.seconds) match {
+      case Some(res) =>
+        val actualQuota = res("actual_quota").asInt32().getValue
+        if (actualQuota >= quotaToRecord) {
+          entriesCollection.updateOne(
+            equal("actual_quota", auth),
+            set("actual_quota", actualQuota - quotaToRecord)
+          ).toFutureOption()
+        } else Future(None)
+      case None => Future(None)
+    }
+  }
+
   def getHeadEntry: Future[Option[Document]] = entriesCollection.find().first().toFutureOption()
 
   def getAllEntries: Future[Seq[Document]] = entriesCollection.find().toFuture()
@@ -44,6 +62,11 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
   def getEntryByAuth(toFind: String): Future[Option[Document]] =
     entriesCollection.find(equal("auth_entry", toFind)).first().toFutureOption()
 
+  def getEntryByAuthAndHostname(auth: String, hostname: String): Future[Option[Document]] =
+    entriesCollection.find(and(
+      equal("auth_entry", auth),
+      equal("hostname", hostname))
+    ).first().toFutureOption()
 }
 
 object MongoEntriesConnector {

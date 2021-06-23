@@ -19,7 +19,7 @@ object HealthcheckRoute extends GlobalRoute {
    *
    * GET ~/healthcheck/ping -> <pong>
    *
-   * GET ~/healthcheck/deep_ping + AUTH-> <db is ok>
+   * GET ~/healthcheck/db_ping + AUTH-> <db is ok>
    *
    * @responses
    * <notAcceptableResponse>
@@ -35,7 +35,9 @@ object HealthcheckRoute extends GlobalRoute {
       case `SuccessLogin` => deepPingResponse
       case `AuthFailed` => authenticationFailedResponse
       case `HostnameNotFound` => hostnameNotFoundResponse
-      case _ => internalServerErrorResponse
+      case _ =>
+        system.log.error("Check auth failed, completing with 500")
+        internalServerErrorResponse
     }
   }
 }

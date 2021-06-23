@@ -26,7 +26,10 @@ object AdminApiRoute extends GlobalRoute {
             case elems =>
               system.log.info("get-all admins list operation acquired")
               val entries = elems.map { doc =>
-                Entries(doc("auth_entry").asString().getValue, doc("hostname").asString().getValue, isAdmin = true)
+                Entries(doc("auth_entry").asString().getValue,
+                        doc("hostname").asString().getValue,
+                        isAdmin = true,
+                        doc("actual_quota").asInt32().getValue)
               }
               entriesResponse(formatEntrySeq(entries))
           }
@@ -50,7 +53,7 @@ object AdminApiRoute extends GlobalRoute {
     pathPrefix("add-admin") {
       parameter("auth", "hostname") {
         (auth, hostname) =>
-        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true))) {
+        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true, 9))) {
           case Success(Some(_)) => okResponse
           case _ =>
             system.log.error(s"Cannot insert entries to db")

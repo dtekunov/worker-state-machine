@@ -9,10 +9,7 @@ import scala.util.{Failure, Success, Try}
 package object utils {
 
   /**
-   *
-   * @param func
-   * @tparam T
-   * @return
+   * Transforms Try[Option[T]] to Some(T) if Success and to None if failed
    */
   def tryOptionToOption[T](func: Try[Option[T]]): Option[T] = func match {
     case Success(res) => res
@@ -32,7 +29,8 @@ package object utils {
     Entries(
       doc("auth_entry").asString().getValue,
       doc("hostname").asString().getValue,
-      doc("is_admin").asBoolean().getValue
+      doc("is_admin").asBoolean().getValue,
+      doc("actual_quota").asInt32().getValue
     )
 
 }
