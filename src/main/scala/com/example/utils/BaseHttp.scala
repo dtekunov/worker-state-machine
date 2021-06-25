@@ -24,4 +24,22 @@ trait BaseHttp {
         contentType = ContentTypes.`application/json`,
         string = output
       ))
+
+  protected def alreadyExistsResponse(output: String): HttpResponse =
+   HttpResponse(
+      status = StatusCodes.AlreadyReported,
+      headers = baseHeaders,
+      entity = HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = JsonWriter.format(output)
+      ))
+
+  protected def notFoundResponse(output: String): HttpResponse =
+    HttpResponse(
+      status = StatusCodes.AlreadyReported,
+      headers = baseHeaders,
+      entity = HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = JsonWriter.format(output)
+      ))
 }

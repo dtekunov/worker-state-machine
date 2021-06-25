@@ -60,29 +60,17 @@ object Responses extends BaseHttp {
       )))
 
   def hostnameNotFoundResponse: StandardRoute =
-    complete(HttpResponse(
-      status = StatusCodes.NotFound,
-      headers = baseHeaders,
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = JsonWriter.format("Given host is not found")
-      )))
+    complete(notFoundResponse("Given host is not found"))
 
   def authNotFoundResponse: StandardRoute =
-    complete(HttpResponse(
-      status = StatusCodes.NotFound,
-      headers = baseHeaders,
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = JsonWriter.format("Given auth is not found")
-      )))
+    complete(notFoundResponse("Given auth is not found"))
 
   def invalidUrlResponse: StandardRoute =
-    complete(HttpResponse(
-      status = StatusCodes.NotFound,
-      headers = baseHeaders,
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = JsonWriter.format("Url is malformed")
-      )))
+    complete(notFoundResponse("Url is malformed"))
+
+  def adminAlreadyExistsResponse: StandardRoute =
+    complete(alreadyExistsResponse("Given admin already exists"))
+
+  def clientAlreadyExistsResponse: StandardRoute =
+    complete(alreadyExistsResponse("Given client already exists"))
 }

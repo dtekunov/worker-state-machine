@@ -56,22 +56,38 @@ object AdminApiRoute extends GlobalRoute {
     pathPrefix("add-admin") {
       parameter("auth", "hostname") {
         (auth, hostname) =>
-        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true, -1))) {
-          case Success(Some(_)) => okResponse
-          case _ =>
-            system.log.error(s"Cannot insert entries to db")
-            internalServerErrorResponse
-        }
+          onComplete(db.getEntryByAuthAndHostname(auth, hostname)) {
+            case Success(Some(_)) => adminAlreadyExistsResponse
+            case Success(None) =>
+              onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true, -1))) {
+                case Success(Some(_)) => okResponse
+                case _ =>
+                  system.log.error(s"Cannot insert entries to db")
+                  internalServerErrorResponse
+              }
+            case Failure(ex) =>
+              system.log.error(s"Cannot get entries due to $ex")
+              internalServerErrorResponse
+          }
+
       }
     } ~ pathPrefix("add-client") {
       parameter("auth", "hostname", "quota".as[Int]) {
         (auth, hostname, quota) =>
-          onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = false, quota))) {
-            case Success(Some(_)) => okResponse
-            case _ =>
-              system.log.error(s"Cannot insert entries to db")
+          onComplete(db.getEntryByAuthAndHostname(auth, hostname)) {
+            case Success(Some(_)) => clientAlreadyExistsResponse
+            case Success(None) =>
+              onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = false, quota))) {
+                case Success(Some(_)) => okResponse
+                case _ =>
+                  system.log.error(s"Cannot insert entries to db")
+                  internalServerErrorResponse
+            }
+            case Failure(ex) =>
+              system.log.error(s"Cannot get entries due to $ex")
               internalServerErrorResponse
           }
+
       }
     } ~ pathPrefix("set-quota") {
       parameter("hostname", "quotaToSet".as[Int]) { (hostname, quotaToSet) =>
