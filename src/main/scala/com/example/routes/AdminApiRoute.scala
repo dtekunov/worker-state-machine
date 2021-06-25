@@ -37,32 +37,51 @@ object AdminApiRoute extends GlobalRoute {
             system.log.error(s"Cannot extract entries from db due to $ex")
             internalServerErrorResponse
         }
-      } ~ pathPrefix("get-hostname-by-auth") {
-        onComplete(db.getEntryByAuth(auth)) {
-          case Success(maybeDoc) =>
-            maybeDoc match {
-              case Some(doc) => entriesResponse(format(mongoDocToEntry(doc)))
-              case None => hostnameNotFoundResponse
-            }
-          case Failure(ex) =>
-            system.log.error(s"Cannot extract entries from db due to $ex")
-            internalServerErrorResponse
+      } ~
+        pathPrefix("get-entry-by-auth") {
+        parameter("authToFind") { authToFind =>
+          onComplete(db.getEntryByAuth(authToFind)) {
+            case Success(maybeDoc) =>
+              maybeDoc match {
+                case Some(doc) => entriesResponse(format(mongoDocToEntry(doc)))
+                case None => hostnameNotFoundResponse
+              }
+            case Failure(ex) =>
+              system.log.error(s"Cannot extract entries from db due to $ex")
+              internalServerErrorResponse
+          }
         }
       }
   } ~ post {
     pathPrefix("add-admin") {
       parameter("auth", "hostname") {
         (auth, hostname) =>
-        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true, 9))) {
+        onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = true, -1))) {
           case Success(Some(_)) => okResponse
           case _ =>
             system.log.error(s"Cannot insert entries to db")
             internalServerErrorResponse
         }
       }
+    } ~ pathPrefix("add-client") {
+      parameter("auth", "hostname", "quota".as[Int]) {
+        (auth, hostname, quota) =>
+          onComplete(db.insertSingleEntry(Entries(auth, hostname, isAdmin = false, quota))) {
+            case Success(Some(_)) => okResponse
+            case _ =>
+              system.log.error(s"Cannot insert entries to db")
+              internalServerErrorResponse
+          }
+      }
+    } ~ pathPrefix("set-quota") {
+      parameter("hostname", "quotaToSet".as[Int]) { (hostname, quotaToSet) =>
+        okResponse // TODO
+      }
     }
   } ~ delete {
     pathPrefix("delete-admin") {
+      okResponse // TODO
+    } ~ pathPrefix("delete-client") {
       okResponse // TODO
     }
   }

@@ -20,18 +20,19 @@ object ClientDataRoute extends GlobalRoute {
         parameter("filename".as[String]) { filename =>
           okResponse //TODO
         }
-      } ~ pathPrefix("get-file") {
-        parameter("filename".as[String]) { filename =>
-          onComplete(db.updateQuota(auth, hostname, 1)){
-            case Success(res) => res match {
-              case Some(_) => smallFileResponse(filename)
-              case None => quotaOverflowedResponse
-            }
+      } ~
+        pathPrefix("get-file") {
+          parameter("filename".as[String]) { filename =>
+            onComplete(db.updateQuota(auth, 1)) {
+              case Success(res) => res match {
+                case Some(_) => smallFileResponse(filename)
+                case None => quotaOverflowedResponse
+              }
               case Failure(ex) =>
                 system.log.error(s"Cannot update quota due to $ex")
                 internalServerErrorResponse
+            }
           }
         }
-      }
     }
 }

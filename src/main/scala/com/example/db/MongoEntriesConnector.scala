@@ -9,9 +9,9 @@ import org.mongodb.scala.result.UpdateResult
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
+class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionContext) {
 
-  private val mongoClient: MongoClient = MongoClient("mongodb://localhost")
+  private val mongoClient: MongoClient = MongoClient(url)
 
   private val database: MongoDatabase = mongoClient.getDatabase(dbName)
 
@@ -39,19 +39,22 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
     userLogsCollection.insertOne(docToInsert).toFutureOption()
   }
 
-  def updateQuota(auth: String, hostname: String, quotaToRecord: Int): Future[Option[UpdateResult]] = {
-    Await.result(getEntryByAuthAndHostname(auth, hostname), 5.seconds) match {
+  def updateQuota(auth: String, quotaToRecord: Int): Future[Option[UpdateResult]] =
+    Await.result(getEntryByAuth(auth), 5.seconds) match {
       case Some(res) =>
         val actualQuota = res("actual_quota").asInt32().getValue
-        if (actualQuota >= quotaToRecord) {
-          entriesCollection.updateOne(
-            equal("actual_quota", auth),
-            set("actual_quota", actualQuota - quotaToRecord)
-          ).toFutureOption()
-        } else Future(None)
+        updateQuotaInner(actualQuota, quotaToRecord)(auth)
       case None => Future(None)
     }
-  }
+
+  private def updateQuotaInner(actualQuota: Int, quotaToRecord: Int)(auth: String): Future[Option[UpdateResult]] =
+    if (actualQuota >= quotaToRecord) {
+      entriesCollection.updateOne(
+        equal("auth_entry", auth),
+        set("actual_quota", actualQuota - quotaToRecord)
+      ).toFutureOption()
+    } else Future(None)
+
 
   def getHeadEntry: Future[Option[Document]] = entriesCollection.find().first().toFutureOption()
 
@@ -71,7 +74,8 @@ class MongoEntriesConnector(dbName: String)(implicit ec: ExecutionContext) {
 
 object MongoEntriesConnector {
   def initiateDb(config: Config)(implicit ec: ExecutionContext): MongoEntriesConnector = {
+    val url = config.getString("main.db.url")
     val dbName = config.getString("main.db.name")
-    new MongoEntriesConnector(dbName)
+    new MongoEntriesConnector(url, dbName)
   }
 }

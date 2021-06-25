@@ -6,6 +6,7 @@ import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.concurrent.ScalaFutures
@@ -32,6 +33,44 @@ class UserRoutesSpec extends AnyWordSpec with Matchers with ScalaFutures with Sc
   // use the json formats to marshal and unmarshall objects in the test
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   //#set-up
+
+  "Routes" should {
+    "return ok" in {
+      val testHeaders = Seq(
+        RawHeader("Host", "127.0.0.2"),
+        RawHeader("Authorization", "no-auth"),
+        RawHeader("Client-Entity", "client")
+      )
+
+      val request = HttpRequest(uri = "/healthcheck/ping", headers = testHeaders)
+
+      request ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+
+        contentType shouldBe ContentTypes.`application/json`
+
+        entityAs[String] shouldBe """{"message":"ok"}"""
+      }
+    }
+
+    "return correct value" in {
+      val testHeaders = Seq(
+        RawHeader("Host", "127.0.0.2"),
+        RawHeader("Authorization", "no-auth"),
+        RawHeader("Client-Entity", "client")
+      )
+
+      val request = HttpRequest(uri = "/healthcheck/max-limit", headers = testHeaders)
+
+      request ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+
+        contentType shouldBe ContentTypes.`application/json`
+
+        entityAs[String] shouldBe s"""{"message":${system.settings.config.getInt("main")}"""
+      }
+    }
+  }
 
   //#actual-test
   "UserRoutes" should {

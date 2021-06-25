@@ -69,41 +69,43 @@ class Routes()(implicit val system: ActorSystem[_]) {
               system.log.error("Check auth failed, completing with 500")
               invalidClientEntityResponse
           }
+        } ~
+          pathPrefix("data") {
+            val db = initiateDb(config)(ec)
+            checkRequester(rawRequester) {
+              case `Client` =>
+                checkAuth(hostname, auth, db)(ec) {
+                  case `SuccessLogin` => ClientDataRoute(db, auth, hostname)(system, ec)
+                  case `AuthFailed` => authenticationFailedResponse
+                  case `HostnameNotFound` => hostnameNotFoundResponse
+                  case _ =>
+                    system.log.error("Check auth failed, completing with 500")
+                    internalServerErrorResponse
+                }
 
-        } ~ pathPrefix("data") {
-          val db = initiateDb(config)(ec)
-          checkRequester(rawRequester) {
-            case `Client` =>
-              checkAuth(hostname, auth, db)(ec) {
-                case `SuccessLogin` => ClientDataRoute(db, auth, hostname)(system, ec)
-                case `AuthFailed` => authenticationFailedResponse
-                case `HostnameNotFound` => hostnameNotFoundResponse
-                case _ =>
-                  system.log.error("Check auth failed, completing with 500")
-                  internalServerErrorResponse
-              }
+              case `Editor` => EditorDataRoute(db, auth, hostname)(system, ec)
+              case `Admin` => notAcceptableResponse("Cannot access the following route with given Client-Entity")
+              case _ => invalidClientEntityResponse
+            }
 
-            case `Editor` => EditorDataRoute(db, auth, hostname)(system, ec)
-            case `Admin` => notAcceptableResponse("Cannot access the following route with given Client-Entity")
-            case _ => invalidClientEntityResponse
+            /**
+             * Doc for this route is provided in Healthcheck route.scala
+             */
+          } ~
+          pathPrefix("healthcheck") {
+            pathPrefix(Remaining) {
+              case remain if remain == "max-limit" =>
+                maxLimitResponse(system.settings.config.getInt("main.max-limit"))
+              case remain if remain == "ping" =>
+                okResponse
+              case remain if remain == "db_ping" =>
+                checkRequester(rawRequester) {
+                  case `Admin` =>
+                    val db = initiateDb(config)(ec)
+                    HealthcheckRoute(db, auth, hostname)(system, ec)
+                  case _ => invalidClientEntityResponse
+                }
+            }
           }
-          /**
-           * Doc for this route is provided in Healthcheck route.scala
-           */
-        } ~ pathPrefix("healthcheck") {
-          pathPrefix(Remaining) {
-            case remain if remain == "max-limit" =>
-              maxLimitResponse(system.settings.config.getInt("main.max-limit"))
-            case remain if remain == "ping" =>
-              okResponse
-            case remain if remain == "db_ping" =>
-              checkRequester(rawRequester) {
-                case `Admin` =>
-                  val db = initiateDb(config)(ec)
-                  HealthcheckRoute(db, auth, hostname)(system, ec)
-                case _ => invalidClientEntityResponse
-              }
-          }
-        }
     }
 }
