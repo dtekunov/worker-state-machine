@@ -1,7 +1,7 @@
 package com.example.jsonFormatters
 
 import com.example.db.{Entries, UserLogs}
-import org.json4s.{Extraction, FullTypeHints, JArray, JBool, JInt, JLong, JObject, JString, JValue}
+import org.json4s.{Extraction, FullTypeHints, JArray, JBool, JDouble, JInt, JLong, JObject, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, pretty, render}
 import org.json4s.jackson.Serialization
 
@@ -18,10 +18,10 @@ object JsonWriter {
 
     case res: Entries =>
       pretty(render(JObject(
-        "auth_entry" -> JString(res.authEntry),
-        "hostname" -> JString(res.hostname),
-        "is_admin" -> JBool(res.isAdmin),
-        "actual_quota" -> JInt(res.actualQuota)
+        Entries.authEntryDb -> JString(res.authEntry),
+        Entries.hostnameDb -> JString(res.hostname),
+        Entries.isAdminDb -> JBool(res.isAdmin),
+        Entries.actualQuotaDb -> JDouble(res.actualQuota)
       )))
 
     case res: UserLogs =>
@@ -29,7 +29,7 @@ object JsonWriter {
         "id" -> JLong(res.id),
         "hostname" -> JString(res.hostname),
         "added_time" -> JString(res.addedTime.toString),
-        "quota_reserved" -> JInt(res.quota_reserved),
+        "quota_reserved" -> JInt(res.quotaReserved),
       )))
   }
 

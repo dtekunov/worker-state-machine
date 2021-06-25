@@ -34,7 +34,8 @@ object HealthcheckRoute extends GlobalRoute {
     checkAuth("admin", auth, db)(ec) {
       case `SuccessLogin` => deepPingResponse
       case `AuthFailed` => authenticationFailedResponse
-      case `HostnameNotFound` => hostnameNotFoundResponse
+      case `HostnameNotFound` =>
+        hostnameNotFoundResponse
       case _ =>
         system.log.error("Check auth failed, completing with 500")
         internalServerErrorResponse

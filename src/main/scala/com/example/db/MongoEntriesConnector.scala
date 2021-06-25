@@ -21,10 +21,10 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
 
   def insertSingleEntry(entry: Entries): Future[Option[Completed]] = {
     val docToInsert = Document(
-      "authEntry" -> entry.authEntry,
-      "hostname" -> entry.hostname,
-      "is_admin" -> entry.isAdmin,
-      "actual_quota" -> entry.actualQuota)
+      Entries.authEntryDb -> entry.authEntry,
+      Entries.hostnameDb -> entry.hostname,
+      Entries.isAdminDb -> entry.isAdmin,
+      Entries.actualQuotaDb -> entry.actualQuota)
 
     entriesCollection.insertOne(docToInsert).toFutureOption()
   }
@@ -32,9 +32,9 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
   def insertSingleUserLogs(userLog: UserLogs): Future[Option[Completed]] = {
     val docToInsert = Document(
       "id" -> userLog.id,
-      "hostName" -> userLog.hostname,
-      "addedTime" -> userLog.addedTime.toString,
-      "quota_reserved" -> userLog.quota_reserved
+      "hostname" -> userLog.hostname,
+      "added_time" -> userLog.addedTime.toString,
+      "quota_reserved" -> userLog.quotaReserved
     )
     userLogsCollection.insertOne(docToInsert).toFutureOption()
   }

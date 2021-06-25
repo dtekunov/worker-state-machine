@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import com.example.db.{Entries, MongoEntriesConnector}
 import com.example.directives.{Requester, checkAuth, checkRequester}
 import com.example.jsonFormatters.JsonWriter.{format, formatEntrySeq}
-import com.example.utils.Responses.{authMechanismIsNotWorkingResponse, authenticationFailedResponse, deepPingResponse, entriesResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.example.utils.Responses._
 import com.example.utils.mongoDocToEntry
 
 import scala.concurrent.ExecutionContext
@@ -29,7 +29,7 @@ object AdminApiRoute extends GlobalRoute {
                 Entries(doc("auth_entry").asString().getValue,
                         doc("hostname").asString().getValue,
                         isAdmin = true,
-                        doc("actual_quota").asInt32().getValue)
+                        doc("actual_quota").asDouble().getValue)
               }
               entriesResponse(formatEntrySeq(entries))
           }
@@ -44,7 +44,7 @@ object AdminApiRoute extends GlobalRoute {
             case Success(maybeDoc) =>
               maybeDoc match {
                 case Some(doc) => entriesResponse(format(mongoDocToEntry(doc)))
-                case None => hostnameNotFoundResponse
+                case None => authNotFoundResponse
               }
             case Failure(ex) =>
               system.log.error(s"Cannot extract entries from db due to $ex")

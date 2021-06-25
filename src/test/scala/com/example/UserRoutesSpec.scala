@@ -70,6 +70,26 @@ class UserRoutesSpec extends AnyWordSpec with Matchers with ScalaFutures with Sc
         entityAs[String] shouldBe s"""{"message":${system.settings.config.getInt("main")}"""
       }
     }
+
+    "return 404 for wrong url" in {
+      val testHeaders = Seq(
+        RawHeader("Host", "127.0.0.2"),
+        RawHeader("Authorization", "no-auth"),
+        RawHeader("Client-Entity", "client")
+      )
+
+      val request = HttpRequest(uri = "/healthcheck/aaa", headers = testHeaders)
+
+      request ~> routes ~> check {
+        status shouldBe StatusCodes.NotFound
+
+        contentType shouldBe ContentTypes.`application/json`
+
+        entityAs[String] shouldBe s"""{
+                                     |  "message": "Url is malformed"
+                                     |}"""
+      }
+    }
   }
 
   //#actual-test

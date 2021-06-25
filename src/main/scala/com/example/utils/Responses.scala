@@ -10,9 +10,9 @@ import com.example.routes.{ClientApiRoute, GlobalRoute}
 object Responses extends BaseHttp {
 
   def okResponse: StandardRoute = complete(standardOkResponse("ok"))
-  def deepPingResponse: StandardRoute = complete(standardOkResponse("auth successful"))
+  def deepPingResponse: StandardRoute = complete(standardOkResponse("db ok"))
   def maxLimitResponse(limit: Int): StandardRoute = complete(standardOkResponse(limit))
-  def entriesResponse(entries: String): StandardRoute = complete(standardOkResponse(entries))
+  def entriesResponse(entries: String): StandardRoute = complete(okResponseAsIs(entries))
 
   def notAcceptableResponse(message: String): StandardRoute =
     complete(HttpResponse(
@@ -66,5 +66,23 @@ object Responses extends BaseHttp {
       entity = HttpEntity(
         contentType = ContentTypes.`application/json`,
         string = JsonWriter.format("Given host is not found")
+      )))
+
+  def authNotFoundResponse: StandardRoute =
+    complete(HttpResponse(
+      status = StatusCodes.NotFound,
+      headers = baseHeaders,
+      entity = HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = JsonWriter.format("Given auth is not found")
+      )))
+
+  def invalidUrlResponse: StandardRoute =
+    complete(HttpResponse(
+      status = StatusCodes.NotFound,
+      headers = baseHeaders,
+      entity = HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = JsonWriter.format("Url is malformed")
       )))
 }

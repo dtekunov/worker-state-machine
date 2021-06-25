@@ -15,4 +15,13 @@ trait BaseHttp {
         contentType = ContentTypes.`application/json`,
         string = JsonWriter.format(output)
       ))
+
+  protected def okResponseAsIs(output: String): HttpResponse =
+    HttpResponse(
+      status = StatusCodes.OK,
+      headers = baseHeaders,
+      entity = HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = output
+      ))
 }

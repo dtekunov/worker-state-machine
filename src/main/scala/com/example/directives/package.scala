@@ -39,7 +39,7 @@ package object directives {
     val stubInternalErrorDoc = Document("_id" -> 0, "error" -> "internal")
 
     val result = tryOptionWithAlternative(
-      Try(Await.result(db.getEntryByAuth(hostname), 5.seconds))
+      Try(Await.result(db.getEntryByAuth(authToCheck), 5.seconds))
     )(stubInternalErrorDoc)
 
     result match {
@@ -49,7 +49,8 @@ package object directives {
           provide(SuccessLogin)
         else provide(AuthFailed)
 
-      case None => provide(HostnameNotFound)
+      case None =>
+        provide(HostnameNotFound)
     }
   }
 

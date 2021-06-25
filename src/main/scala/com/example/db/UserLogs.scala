@@ -1,12 +1,15 @@
 package com.example.db
 
-import slick.jdbc.SQLiteProfile.api._
-import slick.lifted.Tag
-
-import java.time.{LocalDate, LocalDateTime, LocalTime}
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 case class UserLogs(id: Long,
                     hostname: String,
                     addedTime: LocalDateTime,
-                    quota_reserved: Int)
+                    quotaReserved: Int)
+
+object UserLogs {
+  val idDb = "id"
+  val hostnameDb = "hostname"
+  val addedTimeDb = "added_time"
+  val quotaReservedDb = "quota_reserved"
+}

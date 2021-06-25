@@ -13,7 +13,7 @@ import com.example.db.MongoEntriesConnector
 import com.example.db.MongoEntriesConnector.initiateDb
 import com.example.directives._
 import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, HealthcheckRoute}
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, invalidUrlResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import com.typesafe.config.Config
 
 /**
@@ -105,6 +105,7 @@ class Routes()(implicit val system: ActorSystem[_]) {
                     HealthcheckRoute(db, auth, hostname)(system, ec)
                   case _ => invalidClientEntityResponse
                 }
+              case _ => invalidUrlResponse
             }
           }
     }

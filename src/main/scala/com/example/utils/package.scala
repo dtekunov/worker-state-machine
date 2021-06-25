@@ -30,7 +30,7 @@ package object utils {
       doc("auth_entry").asString().getValue,
       doc("hostname").asString().getValue,
       doc("is_admin").asBoolean().getValue,
-      doc("actual_quota").asInt32().getValue
+      doc("actual_quota").asDouble().getValue
     )
 
 }
