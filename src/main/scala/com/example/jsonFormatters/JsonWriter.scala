@@ -18,10 +18,10 @@ object JsonWriter {
 
     case res: Entries =>
       pretty(render(JObject(
-        Entries.authEntryDb -> JString(res.authEntry),
-        Entries.hostnameDb -> JString(res.hostname),
-        Entries.isAdminDb -> JBool(res.isAdmin),
-        Entries.actualQuotaDb -> JDouble(res.actualQuota)
+        Entries.authEntryDbFieldName -> JString(res.authEntry),
+        Entries.hostnameDbFieldName -> JString(res.hostname),
+        Entries.isAdminDbFieldName -> JBool(res.isAdmin),
+        Entries.actualQuotaDbFieldName -> JDouble(res.actualQuota)
       )))
 
     case res: UserLogs =>

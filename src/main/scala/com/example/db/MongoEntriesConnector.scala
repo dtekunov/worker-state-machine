@@ -21,10 +21,10 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
 
   def insertSingleEntry(entry: Entries): Future[Option[Completed]] = {
     val docToInsert = Document(
-      Entries.authEntryDb -> entry.authEntry,
-      Entries.hostnameDb -> entry.hostname,
-      Entries.isAdminDb -> entry.isAdmin,
-      Entries.actualQuotaDb -> entry.actualQuota)
+      Entries.authEntryDbFieldName -> entry.authEntry,
+      Entries.hostnameDbFieldName -> entry.hostname,
+      Entries.isAdminDbFieldName -> entry.isAdmin,
+      Entries.actualQuotaDbFieldName -> entry.actualQuota)
 
     entriesCollection.insertOne(docToInsert).toFutureOption()
   }
@@ -39,19 +39,19 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
     userLogsCollection.insertOne(docToInsert).toFutureOption()
   }
 
-  def updateQuota(auth: String, quotaToRecord: Int): Future[Option[UpdateResult]] =
-    Await.result(getEntryByAuth(auth), 5.seconds) match {
+  def updateQuota(hostname: String, quotaToRecord: Int): Future[Option[UpdateResult]] =
+    Await.result(getEntryByHostname(hostname), 5.seconds) match {
       case Some(res) =>
-        val actualQuota = res("actual_quota").asInt32().getValue
-        updateQuotaInner(actualQuota, quotaToRecord)(auth)
+        val actualQuota = res(Entries.actualQuotaDbFieldName).asInt32().getValue
+        updateQuotaInner(actualQuota, quotaToRecord)(hostname)
       case None => Future(None)
     }
 
-  private def updateQuotaInner(actualQuota: Int, quotaToRecord: Int)(auth: String): Future[Option[UpdateResult]] =
+  private def updateQuotaInner(actualQuota: Int, quotaToRecord: Int)(hostname: String): Future[Option[UpdateResult]] =
     if (actualQuota >= quotaToRecord) {
       entriesCollection.updateOne(
-        equal("auth_entry", auth),
-        set("actual_quota", actualQuota - quotaToRecord)
+        equal(Entries.hostnameDbFieldName, hostname),
+        set(Entries.actualQuotaDbFieldName, actualQuota - quotaToRecord)
       ).toFutureOption()
     } else Future(None)
 
@@ -63,12 +63,15 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
   def getHeadLog: Future[Option[Document]] = userLogsCollection.find().first().toFutureOption()
 
   def getEntryByAuth(toFind: String): Future[Option[Document]] =
-    entriesCollection.find(equal("auth_entry", toFind)).first().toFutureOption()
+    entriesCollection.find(equal(Entries.authEntryDbFieldName, toFind)).first().toFutureOption()
+
+  def getEntryByHostname(toFind: String): Future[Option[Document]] =
+    entriesCollection.find(equal(Entries.hostnameDbFieldName, toFind)).first().toFutureOption()
 
   def getEntryByAuthAndHostname(auth: String, hostname: String): Future[Option[Document]] =
     entriesCollection.find(and(
-      equal("auth_entry", auth),
-      equal("hostname", hostname))
+      equal(Entries.authEntryDbFieldName, auth),
+      equal(Entries.hostnameDbFieldName, hostname))
     ).first().toFutureOption()
 }
 

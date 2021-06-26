@@ -6,8 +6,8 @@ case class Entries(authEntry: String,
                    actualQuota: Double)
 
 object Entries {
-  final val authEntryDb = "auth_entry"
-  final val hostnameDb = "hostname"
-  final val isAdminDb = "is_admin"
-  final val actualQuotaDb = "actual_quota"
+  final val authEntryDbFieldName = "auth_entry"
+  final val hostnameDbFieldName = "hostname"
+  final val isAdminDbFieldName = "is_admin"
+  final val actualQuotaDbFieldName = "actual_quota"
 }

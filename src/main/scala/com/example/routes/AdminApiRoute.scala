@@ -91,7 +91,20 @@ object AdminApiRoute extends GlobalRoute {
       }
     } ~ pathPrefix("set-quota") {
       parameter("hostname", "quotaToSet".as[Int]) { (hostname, quotaToSet) =>
-        okResponse // TODO
+        onComplete(db.getEntryByHostname(hostname)) {
+          case Success(Some(_)) =>
+            onComplete(db.updateQuota(hostname, quotaToSet)) {
+              case Success(Some(_)) => okResponse
+              case _ =>
+                system.log.error(s"Cannot insert entries to db")
+                internalServerErrorResponse
+            }
+          case Success(None) => hostnameNotFoundResponse
+
+          case Failure(ex) =>
+            system.log.error(s"Cannot get entries due to $ex")
+            internalServerErrorResponse
+        }
       }
     }
   } ~ delete {

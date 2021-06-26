@@ -10,7 +10,7 @@ import com.example.utils.Responses.baseHeaders
 
 object FileBasedResponses extends BaseHttp {
 
-  def smallFileResponse(filename: String): Route = getFromFile(s"$filename")
+  def smallFileResponse(filename: String): Route = getFromFile(s"$filename") //TODO: check that file exists
 
   val quotaOverflowedResponse: StandardRoute = complete(HttpResponse(
     status = StatusCodes.BandwidthLimitExceeded,
