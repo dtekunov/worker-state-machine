@@ -1,6 +1,6 @@
-package com.example.jsonFormatters
+package com.di.jsonFormatters
 
-import com.example.db.{Entries, UserLogs}
+import com.di.db.{Entries, UserLogs}
 import org.json4s.{Extraction, FullTypeHints, JArray, JBool, JDouble, JInt, JLong, JObject, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, pretty, render}
 import org.json4s.jackson.Serialization

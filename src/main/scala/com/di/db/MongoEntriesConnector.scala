@@ -1,4 +1,4 @@
-package com.example.db
+package com.di.db
 
 import com.typesafe.config.Config
 import org.mongodb.scala._

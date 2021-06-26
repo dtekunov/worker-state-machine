@@ -1,7 +1,7 @@
-package com.example.utils
+package com.di.utils
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpResponse, StatusCodes}
-import com.example.jsonFormatters.JsonWriter
+import com.di.jsonFormatters.JsonWriter
 
 trait BaseHttp {
 

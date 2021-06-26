@@ -1,6 +1,6 @@
-package com.example
+package com.di
 
-import com.example.db.Entries
+import com.di.db.Entries
 import org.mongodb.scala.bson.collection.immutable.Document
 
 import scala.util.{Failure, Success, Try}

@@ -1,11 +1,11 @@
-package com.example.utils
+package com.di.utils
 
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.{Route, StandardRoute}
-import com.example.jsonFormatters.JsonWriter
-import com.example.routes.{ClientApiRoute, GlobalRoute}
+import com.di.jsonFormatters.JsonWriter
+import com.di.routes.{ClientApiRoute, GlobalRoute}
 
 object Responses extends BaseHttp {
 

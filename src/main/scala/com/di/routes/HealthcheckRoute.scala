@@ -1,12 +1,12 @@
-package com.example.routes
+package com.di.routes
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives.{get, headerValueByName, pathPrefix}
 import akka.http.scaladsl.server.Route
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.di.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import akka.http.scaladsl.server.Directives._
-import com.example.db.MongoEntriesConnector
-import com.example.directives.{Admin, AuthFailed, HostnameNotFound, InternalServerError, SuccessLogin, checkAuth, checkRequester}
+import com.di.db.MongoEntriesConnector
+import com.di.directives.{Admin, AuthFailed, HostnameNotFound, InternalServerError, SuccessLogin, checkAuth, checkRequester}
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -1,12 +1,12 @@
-package com.example.utils
+package com.di.utils
 
 import akka.http.scaladsl.server.directives._
 import ContentTypeResolver.Default
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives.{complete, getFromFile}
 import akka.http.scaladsl.server.{Route, StandardRoute}
-import com.example.jsonFormatters.JsonWriter
-import com.example.utils.Responses.baseHeaders
+import com.di.jsonFormatters.JsonWriter
+import com.di.utils.Responses.baseHeaders
 
 object FileBasedResponses extends BaseHttp {
 

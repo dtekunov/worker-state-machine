@@ -1,4 +1,4 @@
-package com.example
+package com.di
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
@@ -9,11 +9,11 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import com.example.db.MongoEntriesConnector
-import com.example.db.MongoEntriesConnector.initiateDb
-import com.example.directives._
-import com.example.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, HealthcheckRoute}
-import com.example.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, invalidUrlResponse, maxLimitResponse, notAcceptableResponse, okResponse}
+import com.di.db.MongoEntriesConnector
+import com.di.db.MongoEntriesConnector.initiateDb
+import com.di.directives._
+import com.di.routes.{AdminApiRoute, ClientApiRoute, ClientDataRoute, EditorDataRoute, HealthcheckRoute}
+import com.di.utils.Responses.{authenticationFailedResponse, deepPingResponse, hostnameNotFoundResponse, internalServerErrorResponse, invalidClientEntityResponse, invalidUrlResponse, maxLimitResponse, notAcceptableResponse, okResponse}
 import com.typesafe.config.Config
 
 /**

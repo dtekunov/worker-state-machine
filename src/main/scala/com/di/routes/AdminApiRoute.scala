@@ -1,13 +1,13 @@
-package com.example.routes
+package com.di.routes
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.example.db.{Entries, MongoEntriesConnector}
-import com.example.directives.{Requester, checkAuth, checkRequester}
-import com.example.jsonFormatters.JsonWriter.{format, formatEntrySeq}
-import com.example.utils.Responses._
-import com.example.utils.mongoDocToEntry
+import com.di.db.{Entries, MongoEntriesConnector}
+import com.di.directives.{Requester, checkAuth, checkRequester}
+import com.di.jsonFormatters.JsonWriter.{format, formatEntrySeq}
+import com.di.utils.Responses._
+import com.di.utils.mongoDocToEntry
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}

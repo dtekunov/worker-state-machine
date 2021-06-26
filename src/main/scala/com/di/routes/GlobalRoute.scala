@@ -1,8 +1,8 @@
-package com.example.routes
+package com.di.routes
 
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.server.Route
-import com.example.db.MongoEntriesConnector
+import com.di.db.MongoEntriesConnector
 
 import scala.concurrent.ExecutionContext
 

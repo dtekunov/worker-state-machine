@@ -1,12 +1,12 @@
-package com.example.routes
+package com.di.routes
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.example.db.MongoEntriesConnector
-import com.example.directives.Requester
-import com.example.utils.FileBasedResponses.{quotaOverflowedResponse, smallFileResponse}
-import com.example.utils.Responses.{internalServerErrorResponse, okResponse}
+import com.di.db.MongoEntriesConnector
+import com.di.directives.Requester
+import com.di.utils.FileBasedResponses.{quotaOverflowedResponse, smallFileResponse}
+import com.di.utils.Responses.{internalServerErrorResponse, okResponse}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}

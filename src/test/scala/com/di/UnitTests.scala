@@ -1,11 +1,11 @@
-package com.example
+package com.di
 
 import akka.http.scaladsl.server.Directives.provide
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.example.db.{Entries, UserLogs}
-import com.example.directives.{Admin, Client, Editor, Unknown, checkRequester}
-import com.example.jsonFormatters.JsonWriter
-import com.example.utils.{tryOptionToOption, tryOptionWithAlternative}
+import com.di.db.{Entries, UserLogs}
+import com.di.directives.{Admin, Client, Editor, Unknown, checkRequester}
+import com.di.jsonFormatters.JsonWriter
+import com.di.utils.{tryOptionToOption, tryOptionWithAlternative}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

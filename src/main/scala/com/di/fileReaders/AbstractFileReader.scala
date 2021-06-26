@@ -1,4 +1,4 @@
-package com.example.fileReaders
+package com.di.fileReaders
 
 abstract class AbstractFileReader(filename: String) {
 
