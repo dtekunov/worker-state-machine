@@ -5,8 +5,10 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.di.db.MongoEntriesConnector
 import com.di.directives.Requester
-import com.di.utils.FileBasedResponses.{quotaOverflowedResponse, smallFileResponse}
+import com.di.routes.ClientApiRoute.recordUserAction
+import com.di.utils.FileBasedResponses.{quotaOverflowedResponse, getFileResponse}
 import com.di.utils.Responses.{internalServerErrorResponse, okResponse}
+import com.di.utils.{ActionType, mongoDocToEntry}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -14,7 +16,7 @@ import scala.util.{Failure, Success}
 object ClientDataRoute extends GlobalRoute {
 
   def apply(db: MongoEntriesConnector, auth: String, hostname: String)
-           (system: ActorSystem[_], ec: ExecutionContext): Route =
+           (implicit system: ActorSystem[_], ec: ExecutionContext): Route =
     get {
       pathPrefix("get-single-record-structured") {
         parameter("filename".as[String]) { filename =>
@@ -23,11 +25,11 @@ object ClientDataRoute extends GlobalRoute {
       } ~
         pathPrefix("get-file") {
           parameter("filename".as[String]) { filename =>
-            onComplete(db.updateQuota(auth, 1)) {
-              case Success(res) => res match {
-                case Some(_) => smallFileResponse(filename)
-                case None => quotaOverflowedResponse
-              }
+            onComplete(db.updateQuota(hostname, 1)) {
+              case Success(Some(_)) =>
+                recordUserAction(hostname, db, ActionType("get-file"))
+                getFileResponse(filename)
+              case Success(None) => quotaOverflowedResponse
               case Failure(ex) =>
                 system.log.error(s"Cannot update quota due to $ex")
                 internalServerErrorResponse

@@ -2,10 +2,9 @@ package com.di.db
 
 import java.time.LocalDateTime
 
-case class UserLogs(id: Long,
+case class UserLogs(id: String,
                     hostname: String,
-                    addedTime: LocalDateTime,
-                    quotaReserved: Int)
+                    addedTime: LocalDateTime)
 
 object UserLogs {
   val idDb = "id"

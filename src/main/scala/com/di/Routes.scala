@@ -82,8 +82,15 @@ class Routes()(implicit val system: ActorSystem[_]) {
                     system.log.error("Check auth failed, completing with 500")
                     internalServerErrorResponse
                 }
-
-              case `Editor` => EditorDataRoute(db, auth, hostname)(system, ec)
+              case `Editor` =>
+                checkAuth(hostname, auth, db)(ec) {
+                  case `SuccessLogin` => EditorDataRoute(db, auth, hostname)(system, ec)
+                  case `AuthFailed` => authenticationFailedResponse
+                  case `HostnameNotFound` => hostnameNotFoundResponse
+                  case _ =>
+                    system.log.error("Check auth failed, completing with 500")
+                    internalServerErrorResponse
+                }
               case `Admin` => notAcceptableResponse("Cannot access the following route with given Client-Entity")
               case _ => invalidClientEntityResponse
             }

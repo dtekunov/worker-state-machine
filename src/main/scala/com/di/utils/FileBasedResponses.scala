@@ -10,7 +10,15 @@ import com.di.utils.Responses.baseHeaders
 
 object FileBasedResponses extends BaseHttp {
 
-  def smallFileResponse(filename: String): Route = getFromFile(s"$filename") //TODO: check that file exists
+  def getFileResponse(filename: String): Route = getFromFile(s"$filename") //TODO: check that file exists
+
+  def fileUploadedResponse(filename: String): StandardRoute = complete(HttpResponse(
+    status = StatusCodes.BandwidthLimitExceeded,
+    headers = baseHeaders,
+    entity = HttpEntity(
+      contentType = ContentTypes.`application/json`,
+      string = JsonWriter.format(s"File $filename uploaded")
+    )))
 
   val quotaOverflowedResponse: StandardRoute = complete(HttpResponse(
     status = StatusCodes.BandwidthLimitExceeded,
@@ -19,5 +27,4 @@ object FileBasedResponses extends BaseHttp {
       contentType = ContentTypes.`application/json`,
       string = JsonWriter.format("Quota limit reached")
     )))
-
 }

@@ -1,15 +1,18 @@
 package com.di
 
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.server.Directives.onComplete
 import akka.http.scaladsl.server.{Directive0, Directive1, Route, StandardRoute}
 import akka.http.scaladsl.server.directives.BasicDirectives.provide
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
-import com.di.db.MongoEntriesConnector
+import com.di.db.{MongoEntriesConnector, UserLogs}
 import com.di.routes.{ClientApiRoute, GlobalRoute}
 import com.di.utils.Responses.{authenticationFailedResponse, hostnameNotFoundResponse, internalServerErrorResponse}
-import com.di.utils.{tryOptionToOption, tryOptionWithAlternative}
+import com.di.utils.{ActionType, tryOptionToOption, tryOptionWithAlternative}
 import org.mongodb.scala.bson.collection.immutable.Document
 
+import java.time.LocalDateTime
+import java.util.UUID
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
@@ -22,10 +25,10 @@ package object directives {
   case object Editor  extends Requester
   case object Unknown extends Requester
 
-  trait LoginStatus
-  trait FailureLogin              extends LoginStatus
-
+  trait       LoginStatus
+  trait       FailureLogin        extends LoginStatus
   case object SuccessLogin        extends LoginStatus
+
   case object HostnameNotFound    extends FailureLogin
   case object AuthFailed          extends FailureLogin
   case object InternalServerError extends FailureLogin

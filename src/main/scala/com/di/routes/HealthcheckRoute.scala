@@ -30,7 +30,7 @@ object HealthcheckRoute extends GlobalRoute {
    * <internalServerErrorResponse>
    */
   def apply(db: MongoEntriesConnector, auth: String, hostname: String)
-           (system: ActorSystem[_], ec: ExecutionContext): Route = get {
+           (implicit system: ActorSystem[_], ec: ExecutionContext): Route = get {
     checkAuth("admin", auth, db)(ec) {
       case `SuccessLogin` => deepPingResponse
       case `AuthFailed` => authenticationFailedResponse

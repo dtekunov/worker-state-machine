@@ -40,11 +40,10 @@ class UnitTests extends AnyWordSpec with Matchers with ScalaFutures with Scalate
                                          |}""".stripMargin
       JsonWriter.format(Entries("authEntry", "hostname", true, 10.0)) shouldEqual "{\n  \"auth_entry\" : \"authEntry\",\n  \"hostname\" : \"hostname\",\n  \"is_admin\" : true,\n  \"actual_quota\" : 10.0\n}"
       JsonWriter.formatEntrySeq(Seq()) shouldEqual "[ ]"
-      JsonWriter.format(UserLogs(0, "hostname", LocalDateTime.MIN, 100)) shouldEqual """{
-                                                                                       |  "id" : 0,
+      JsonWriter.format(UserLogs("1", "hostname", LocalDateTime.MIN)) shouldEqual """{
+                                                                                       |  "id" : "1",
                                                                                        |  "hostname" : "hostname",
-                                                                                       |  "added_time" : "-999999999-01-01T00:00",
-                                                                                       |  "quota_reserved" : 100
+                                                                                       |  "added_time" : "-999999999-01-01T00:00"
                                                                                        |}""".stripMargin
     }
   }

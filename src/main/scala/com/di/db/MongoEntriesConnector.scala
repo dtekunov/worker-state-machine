@@ -4,20 +4,33 @@ import com.typesafe.config.Config
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters.{and, equal}
 import org.mongodb.scala.model.Updates.set
-import org.mongodb.scala.result.UpdateResult
+import org.mongodb.scala.result.{DeleteResult, UpdateResult}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 
+/**
+ * Implements all mongo-based logic. All functions are Future[Option[_]],
+ * so they can be safely extracted
+ *
+ * Supports:
+ *
+ * GET ~ by hostname | all | head | by hostname | by auth and hostname
+ *
+ * ADD ~ by
+ */
 class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionContext) {
 
   private val mongoClient: MongoClient = MongoClient(url)
 
-  private val database: MongoDatabase = mongoClient.getDatabase(dbName)
+  private val database: MongoDatabase =
+    mongoClient.getDatabase(dbName)
 
-  private val entriesCollection: MongoCollection[Document] = database.getCollection("entries")
+  private val entriesCollection: MongoCollection[Document] =
+    database.getCollection("entries")
 
-  private val userLogsCollection = database.getCollection("userLogs")
+  private val userLogsCollection =
+    database.getCollection("userLogs")
 
   def insertSingleEntry(entry: Entries): Future[Option[Completed]] = {
     val docToInsert = Document(
@@ -31,23 +44,24 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
 
   def insertSingleUserLogs(userLog: UserLogs): Future[Option[Completed]] = {
     val docToInsert = Document(
-      "id" -> userLog.id,
-      "hostname" -> userLog.hostname,
-      "added_time" -> userLog.addedTime.toString,
-      "quota_reserved" -> userLog.quotaReserved
+      UserLogs.idDb -> userLog.id,
+      UserLogs.hostnameDb -> userLog.hostname,
+      UserLogs.addedTimeDb -> userLog.addedTime.toString,
     )
     userLogsCollection.insertOne(docToInsert).toFutureOption()
   }
 
   def updateQuota(hostname: String, quotaToRecord: Int): Future[Option[UpdateResult]] =
-    Await.result(getEntryByHostname(hostname), 5.seconds) match {
+    getEntryByHostname(hostname) flatMap {
       case Some(res) =>
-        val actualQuota = res(Entries.actualQuotaDbFieldName).asInt32().getValue
+        val actualQuota = res(Entries.actualQuotaDbFieldName).asDouble().getValue
         updateQuotaInner(actualQuota, quotaToRecord)(hostname)
-      case None => Future(None)
+      case None =>
+        Future(None)
     }
 
-  private def updateQuotaInner(actualQuota: Int, quotaToRecord: Int)(hostname: String): Future[Option[UpdateResult]] =
+  private def updateQuotaInner(actualQuota: Double, quotaToRecord: Int)
+                              (hostname: String): Future[Option[UpdateResult]] =
     if (actualQuota >= quotaToRecord) {
       entriesCollection.updateOne(
         equal(Entries.hostnameDbFieldName, hostname),
@@ -55,12 +69,14 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
       ).toFutureOption()
     } else Future(None)
 
+  def getHeadEntry: Future[Option[Document]] =
+    entriesCollection.find().first().toFutureOption()
 
-  def getHeadEntry: Future[Option[Document]] = entriesCollection.find().first().toFutureOption()
+  def getAllEntries: Future[Seq[Document]] =
+    entriesCollection.find().toFuture()
 
-  def getAllEntries: Future[Seq[Document]] = entriesCollection.find().toFuture()
-
-  def getHeadLog: Future[Option[Document]] = userLogsCollection.find().first().toFutureOption()
+  def getHeadLog: Future[Option[Document]] =
+    userLogsCollection.find().first().toFutureOption()
 
   def getEntryByAuth(toFind: String): Future[Option[Document]] =
     entriesCollection.find(equal(Entries.authEntryDbFieldName, toFind)).first().toFutureOption()
@@ -73,6 +89,13 @@ class MongoEntriesConnector(url: String, dbName: String)(implicit ec: ExecutionC
       equal(Entries.authEntryDbFieldName, auth),
       equal(Entries.hostnameDbFieldName, hostname))
     ).first().toFutureOption()
+
+  def deleteByAuth(auth: String): Future[Option[DeleteResult]] =
+    entriesCollection.deleteOne(equal(Entries.authEntryDbFieldName, auth)).toFutureOption()
+
+  def deleteByHostname(hostnameToDelete: String): Future[Option[DeleteResult]] = {
+    entriesCollection.deleteOne(equal(Entries.hostnameDbFieldName, hostnameToDelete)).toFutureOption()
+  }
 }
 
 object MongoEntriesConnector {

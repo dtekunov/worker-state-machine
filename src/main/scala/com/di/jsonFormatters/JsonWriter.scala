@@ -26,10 +26,9 @@ object JsonWriter {
 
     case res: UserLogs =>
       pretty(render(JObject(
-        "id" -> JLong(res.id),
-        "hostname" -> JString(res.hostname),
-        "added_time" -> JString(res.addedTime.toString),
-        "quota_reserved" -> JInt(res.quotaReserved),
+        UserLogs.idDb -> JString(res.id),
+        UserLogs.hostnameDb -> JString(res.hostname),
+        UserLogs.addedTimeDb -> JString(res.addedTime.toString),
       )))
   }
 

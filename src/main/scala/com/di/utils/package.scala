@@ -8,6 +8,16 @@ import scala.util.{Failure, Success, Try}
 
 package object utils {
 
+  case class ActionType private(name: String)
+
+  object ActionType {
+    private val actions = Set("get-file", "get-record", "get-records", "get-info")
+    def apply(action: String): Option[ActionType] = {
+      if (actions.contains(action)) Some(new ActionType(action))
+      else None
+    }
+  }
+
   /**
    * Transforms Try[Option[T]] to Some(T) if Success and to None if failed
    */

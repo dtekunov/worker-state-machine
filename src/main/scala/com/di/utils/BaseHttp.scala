@@ -26,7 +26,7 @@ trait BaseHttp {
       ))
 
   protected def alreadyExistsResponse(output: String): HttpResponse =
-   HttpResponse(
+    HttpResponse(
       status = StatusCodes.AlreadyReported,
       headers = baseHeaders,
       entity = HttpEntity(
