@@ -18,7 +18,6 @@ trait GlobalRoute {
                       (implicit ec: ExecutionContext, system: ActorSystem[_]): Unit = {
     maybeAction match {
       case Some(action) =>
-
         val logToInsert = UserLogs(
           UUID.randomUUID().toString,
           hostname,

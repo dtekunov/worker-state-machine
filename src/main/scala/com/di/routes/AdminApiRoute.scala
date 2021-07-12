@@ -84,7 +84,7 @@ object AdminApiRoute extends GlobalRoute {
 
         }
       } ~ pathPrefix("set-quota") {
-        parameter("hostname", "quotaToSet".as[Int]) { (hostname, quotaToSet) =>
+        parameter("hostname", "quota".as[Int]) { (hostname, quotaToSet) =>
           onComplete(db.getEntryByHostname(hostname)) {
             case Success(Some(_)) =>
               onComplete(db.updateQuota(hostname, quotaToSet)) {

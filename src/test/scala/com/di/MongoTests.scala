@@ -35,12 +35,15 @@ class MongoTests extends AnyWordSpec with Matchers with ScalaFutures with Scalat
       Await.result(dbInstanceToTest.getAllEntries, 1.second) shouldBe Seq()
     }
 
-    "add values correctly" in {
-      Await.result(dbInstanceToTest.insertSingleEntry(entryTest1), 1.second)
-      val entries = Await.result(dbInstanceToTest.getAllEntries, 1.second)
+    "add and delete values correctly" in {
+      Await.result(dbInstanceToTest.insertSingleEntry(entryTest1), 5.seconds)
+      val entries = Await.result(dbInstanceToTest.getAllEntries, 5.seconds)
       entries.length shouldBe 1
       mongoDocToEntry(entries.head) shouldBe Entries("authEntry1", "hostname1", false, 100)
 
+      Await.result(dbInstanceToTest.deleteByAuth(entryTest1.authEntry), 5.seconds)
+      val maybeEmptyEntries = Await.result(dbInstanceToTest.getAllEntries, 5.seconds)
+      maybeEmptyEntries.length shouldBe 0
     }
 
   }
